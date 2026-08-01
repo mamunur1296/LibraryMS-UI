@@ -74,7 +74,7 @@ export function DashboardPage(): React.ReactElement {
   const isStaff = isAdmin || isLibrarian;
 
   const summaryQuery = useQuery({
-    queryKey: ['dashboard-summary'],
+    queryKey: ['dashboard-summary', session?.userId],
     queryFn: async (): Promise<DashboardSummary> => {
       if (_dashboardDeps === null) throw new Error('DashboardDeps not initialized');
       return _dashboardDeps.getDashboardSummary();
@@ -85,7 +85,7 @@ export function DashboardPage(): React.ReactElement {
   });
 
   const adminQuery = useQuery({
-    queryKey: ['admin-dashboard'],
+    queryKey: ['admin-dashboard', session?.userId],
     queryFn: async (): Promise<AdminDashboard> => {
       if (_dashboardDeps === null) throw new Error('DashboardDeps not initialized');
       return _dashboardDeps.getAdminDashboard();
@@ -95,7 +95,7 @@ export function DashboardPage(): React.ReactElement {
   });
 
   const popularQuery = useQuery({
-    queryKey: ['popular-books'],
+    queryKey: ['popular-books', session?.userId],
     queryFn: async (): Promise<PopularBook[]> => {
       if (_dashboardDeps === null) throw new Error('DashboardDeps not initialized');
       return _dashboardDeps.getPopularBooks();

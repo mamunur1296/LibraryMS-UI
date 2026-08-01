@@ -13,7 +13,7 @@ export function ProfileSettings(): React.ReactElement {
   const module = getAuthModule();
   
   const profileQuery = useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', session?.userId],
     queryFn: async (): Promise<UserProfile> => {
       const result = await module.getProfileUseCase.execute();
       if (result.isErr()) throw result.error;
