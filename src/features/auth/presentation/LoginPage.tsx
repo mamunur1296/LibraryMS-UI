@@ -43,7 +43,7 @@ export function LoginPage(): React.ReactElement {
         }
         return;
       }
-      toast.error(error.message, { duration: 4000 });
+      setError('root.serverError', { type: 'server', message: error.message });
       return;
     }
     toast.success('Welcome back!');
@@ -101,6 +101,12 @@ export function LoginPage(): React.ReactElement {
                 Sign in to your LibraryMS account
               </p>
             </div>
+
+            {errors.root?.serverError && (
+              <div className="mb-6 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-sm text-center">
+                {errors.root.serverError.message}
+              </div>
+            )}
 
             <form
               onSubmit={(e) => {

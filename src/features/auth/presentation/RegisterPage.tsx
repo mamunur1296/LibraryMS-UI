@@ -39,7 +39,7 @@ export function RegisterPage(): React.ReactElement {
         }
         return;
       }
-      toast.error(error.message, { duration: 4000 });
+      setError('root.serverError', { type: 'server', message: error.message });
       return;
     }
     toast.success('Registration successful! Please sign in.');
@@ -65,6 +65,12 @@ export function RegisterPage(): React.ReactElement {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white text-center">Create an Account</h2>
             </div>
+
+            {errors.root?.serverError && (
+              <div className="mb-6 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-sm text-center">
+                {errors.root.serverError.message}
+              </div>
+            )}
 
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-5" noValidate>
               
