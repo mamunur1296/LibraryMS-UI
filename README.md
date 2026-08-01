@@ -123,7 +123,9 @@ The project is fully containerized for production deployment.
 - **Build Image:** Uses a lightweight `node:20-alpine` image to install dependencies and build the static assets.
 - **Runtime:** Serves the assets via an ultra-fast `nginx:1.27-alpine` web server configured for SPA fallback routing (handling 404s by serving `index.html`) and aggressive static caching.
 
-To run the frontend locally via Docker Compose (make sure to use `host.docker.internal` if connecting to a local backend):
+To run the frontend locally via Docker (make sure to set the correct backend URL if needed):
 ```bash
-docker compose up -d --build
+docker build -t libraryms-ui .
+docker run -d -p 5173:80 --name libraryms-ui-app libraryms-ui
 ```
+The app will then be available at `http://localhost:5173`.
