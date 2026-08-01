@@ -44,6 +44,20 @@ export type BranchSummary = z.infer<typeof BranchSummarySchema>;
 export type AdminDashboard = z.infer<typeof AdminDashboardSchema>;
 export type PopularBook = z.infer<typeof PopularBookSchema>;
 
+const MemberProfileStatsSchema = z.object({
+  memberId: z.string(),
+  totalBorrows: z.number(),
+  activeBorrows: z.number(),
+  overdueBorrows: z.number(),
+  activeReservations: z.number(),
+  totalFinesDue: z.number(),
+  totalFinesPaid: z.number(),
+  membershipExpiry: z.string(),
+  nearestDueDate: z.string().nullable(),
+  favouriteCount: z.number(),
+});
+export type MemberProfileStats = z.infer<typeof MemberProfileStatsSchema>;
+
 export class DashboardHttpGateway {
   public constructor(private readonly http: HttpClient) {}
 
@@ -77,6 +91,16 @@ export class DashboardHttpGateway {
     } catch (error) {
       if (error instanceof Error && 'code' in error) return err(error as AppError);
       return err(new ServerError('Failed to load popular books.'));
+    }
+  }
+
+  public async getMemberProfileStats(memberId: string): Promise<Result<MemberProfileStats, AppError>> {
+    try {
+      const raw = await this.http.get(`/api/v1/Members/${memberId}/stats`);
+      return ok(MemberProfileStatsSchema.parse(raw));
+    } catch (error) {
+      if (error instanceof Error && 'code' in error) return err(error as AppError);
+      return err(new ServerError('Failed to load member stats.'));
     }
   }
 }

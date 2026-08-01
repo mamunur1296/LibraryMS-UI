@@ -61,5 +61,10 @@ export function initializeApp(): void {
       if (result.isErr()) throw result.error;
       return result.value;
     },
+    getMemberProfileStats: async (memberId: string) => {
+      const result = await dashboardGateway.getMemberProfileStats(memberId);
+      if (result.isErr()) throw result.error;
+      return result.value;
+    },
   });
 }
