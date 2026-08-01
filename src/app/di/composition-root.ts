@@ -4,6 +4,7 @@ import { appConfig } from '@core/config';
 import { createAuthModule } from '@features/auth/auth-module';
 import { getAuthStore } from '@features/auth/store/auth-store';
 import { createDashboardModule } from '@features/dashboard/dashboard-module';
+import { createBooksModule } from '@features/books/books-module';
 
 // ============================================================
 //  Composition Root — THE one place that wires all concretes.
@@ -44,4 +45,7 @@ export function initializeApp(): void {
 
   // ── 4. Dashboard module ──
   createDashboardModule({ http: authHttp });
+
+  // ── 5. Books module ──
+  createBooksModule({ http: authHttp });
 }

@@ -19,6 +19,9 @@ const DashboardPage = lazy(() =>
     default: m.DashboardPage,
   })),
 );
+const BooksPage = lazy(() =>
+  import('@features/books/presentation/BooksPage').then((m) => ({ default: m.BooksPage })),
+);
 
 function PageLoader(): React.ReactElement {
   return (
@@ -45,7 +48,7 @@ export function AppRouter(): React.ReactElement {
               <Route path="/profile" element={<ProfileSettings />} />
               
               {/* Future pages go here */}
-              <Route path="/books" element={<ComingSoon title="Books" />} />
+              <Route path="/books" element={<BooksPage />} />
               <Route path="/members" element={<ComingSoon title="Members" />} />
               <Route path="/borrows" element={<ComingSoon title="Borrows" />} />
               <Route path="/reservations" element={<ComingSoon title="Reservations" />} />
