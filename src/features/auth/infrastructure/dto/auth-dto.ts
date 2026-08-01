@@ -6,20 +6,20 @@ import { z } from 'zod';
 // ============================================================
 
 export const UserDtoSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   username: z.string(),
   email: z.string().email(),
   role: z.string(),
   isActive: z.boolean(),
-  memberId: z.string().uuid().nullable().optional(),
-  branchId: z.string().uuid().nullable().optional(),
+  memberId: z.string().nullable().optional(),
+  branchId: z.string().nullable().optional(),
   branchName: z.string().nullable().optional(),
 });
 
 export const AuthResponseSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
-  expiresAt: z.string().datetime(),
+  expiresAt: z.string(),
   user: UserDtoSchema,
 });
 

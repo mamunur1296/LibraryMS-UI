@@ -32,6 +32,7 @@ export class AuthHttpGateway implements AuthGateway {
       const dto = AuthResponseSchema.parse(raw);
       return ok(mapToSession(dto));
     } catch (error) {
+      console.error('Login Error:', error);
       if (error instanceof Error && 'code' in error) {
         return err(error as AppError);
       }
