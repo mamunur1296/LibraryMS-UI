@@ -85,6 +85,17 @@ Instead, the application uses a **Result Monad** (`@core/result`) across all bou
 - Node.js (v20+ recommended)
 - `npm` (v10+)
 
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd LibraryMS-UI
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
 ### Environment Configuration
 1. Copy the example environment file:
    ```bash
