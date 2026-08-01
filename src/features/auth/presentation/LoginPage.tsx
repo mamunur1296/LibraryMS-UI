@@ -20,6 +20,7 @@ export function LoginPage(): React.ReactElement {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormValues>({
     defaultValues: { username: '', password: '' },
@@ -32,6 +33,15 @@ export function LoginPage(): React.ReactElement {
   const onSubmit = async (data: LoginFormValues): Promise<void> => {
     const error = await login(data.username, data.password);
     if (error !== null) {
+      const appError = error as any;
+      if (appError.validationErrors) {
+        const vErrors = appError.validationErrors as Record<string, string[]>;
+        for (const [key, messages] of Object.entries(vErrors)) {
+          const fieldName = key.charAt(0).toLowerCase() + key.slice(1);
+          setError(fieldName as any, { type: 'server', message: messages[0] ?? 'Invalid field' });
+        }
+        return;
+      }
       toast.error(error.message, { duration: 4000 });
       return;
     }

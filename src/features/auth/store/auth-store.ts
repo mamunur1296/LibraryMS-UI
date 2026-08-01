@@ -16,7 +16,7 @@ export interface AuthActions {
   readonly login: (username: string, password: string) => Promise<AppError | null>;
   readonly logout: () => Promise<void>;
   readonly refresh: () => Promise<boolean>;
-  readonly register: (username: string, email: string, password: string) => Promise<AppError | null>;
+  readonly register: (username: string, email: string, password: string, firstName: string, lastName: string, phone: string) => Promise<AppError | null>;
   readonly setSession: (session: AuthSession | null) => void;
   readonly clearError: () => void;
 }
@@ -70,9 +70,9 @@ export function createAuthStore(deps: AuthStoreDeps): UseBoundStore<StoreApi<Aut
       return true;
     },
 
-    register: async (username, email, password) => {
+    register: async (username, email, password, firstName, lastName, phone) => {
       set({ isLoading: true, error: null });
-      const result = await deps.registerUseCase.execute({ username, email, password });
+      const result = await deps.registerUseCase.execute({ username, email, password, firstName, lastName, phone });
       set({ isLoading: false });
       if (result.isErr()) {
         set({ error: result.error.message });

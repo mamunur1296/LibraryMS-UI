@@ -39,9 +39,9 @@ export class AuthHttpGateway implements AuthGateway {
     }
   }
 
-  public async refreshToken(refreshToken: string): Promise<Result<AuthSession, AppError>> {
+  public async refreshToken(accessToken: string, refreshToken: string): Promise<Result<AuthSession, AppError>> {
     try {
-      const raw = await this.http.post('/api/v1/Auth/refresh', { refreshToken });
+      const raw = await this.http.post('/api/v1/Auth/refresh', { accessToken, refreshToken });
       const dto = AuthResponseSchema.parse(raw);
       return ok(mapToSession(dto));
     } catch (error) {
@@ -68,12 +68,20 @@ export class AuthHttpGateway implements AuthGateway {
     username: string,
     email: string,
     password: string,
+    role: string,
+    firstName: string,
+    lastName: string,
+    phone: string,
   ): Promise<Result<string, AppError>> {
     try {
       const id = await this.http.post<string>('/api/v1/Auth/register', {
         username,
         email,
         password,
+        role,
+        firstName,
+        lastName,
+        phone,
       });
       return ok(id);
     } catch (error) {

@@ -26,15 +26,15 @@ export function ProfileSettings(): React.ReactElement {
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
-  const { register: registerUsername, handleSubmit: handleUsernameSubmit } = useForm({
+  const { register: registerUsername, handleSubmit: handleUsernameSubmit, setError: setUsernameError, formState: { errors: usernameErrors } } = useForm({
     defaultValues: { username: session?.username ?? '' },
   });
 
-  const { register: registerEmail, handleSubmit: handleEmailSubmit } = useForm({
+  const { register: registerEmail, handleSubmit: handleEmailSubmit, setError: setEmailError, formState: { errors: emailErrors } } = useForm({
     defaultValues: { email: session?.email ?? '' },
   });
 
-  const { register: registerPassword, handleSubmit: handlePasswordSubmit, reset: resetPassword } = useForm({
+  const { register: registerPassword, handleSubmit: handlePasswordSubmit, reset: resetPassword, setError: setPasswordError, formState: { errors: passwordErrors } } = useForm({
     defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
   });
 
@@ -43,6 +43,15 @@ export function ProfileSettings(): React.ReactElement {
     const result = await module.updateUsernameUseCase.execute(data.username);
     setIsUpdatingUsername(false);
     if (result.isErr()) {
+      const appError = result.error as any;
+      if (appError.validationErrors) {
+        const vErrors = appError.validationErrors as Record<string, string[]>;
+        for (const [key, messages] of Object.entries(vErrors)) {
+          const fieldName = key.charAt(0).toLowerCase() + key.slice(1);
+          setUsernameError(fieldName as any, { type: 'server', message: messages[0] ?? 'Invalid field' });
+        }
+        return;
+      }
       toast.error(result.error.message);
       return;
     }
@@ -56,6 +65,15 @@ export function ProfileSettings(): React.ReactElement {
     const result = await module.updateEmailUseCase.execute(data.email);
     setIsUpdatingEmail(false);
     if (result.isErr()) {
+      const appError = result.error as any;
+      if (appError.validationErrors) {
+        const vErrors = appError.validationErrors as Record<string, string[]>;
+        for (const [key, messages] of Object.entries(vErrors)) {
+          const fieldName = key.charAt(0).toLowerCase() + key.slice(1);
+          setEmailError(fieldName as any, { type: 'server', message: messages[0] ?? 'Invalid field' });
+        }
+        return;
+      }
       toast.error(result.error.message);
       return;
     }
@@ -66,13 +84,22 @@ export function ProfileSettings(): React.ReactElement {
 
   const onUpdatePassword = async (data: any): Promise<void> => {
     if (data.newPassword !== data.confirmPassword) {
-      toast.error('New passwords do not match');
+      setPasswordError('confirmPassword', { type: 'manual', message: 'New passwords do not match' });
       return;
     }
     setIsUpdatingPassword(true);
     const result = await module.updatePasswordUseCase.execute(data.currentPassword, data.newPassword);
     setIsUpdatingPassword(false);
     if (result.isErr()) {
+      const appError = result.error as any;
+      if (appError.validationErrors) {
+        const vErrors = appError.validationErrors as Record<string, string[]>;
+        for (const [key, messages] of Object.entries(vErrors)) {
+          const fieldName = key.charAt(0).toLowerCase() + key.slice(1);
+          setPasswordError(fieldName as any, { type: 'server', message: messages[0] ?? 'Invalid field' });
+        }
+        return;
+      }
       toast.error(result.error.message);
       return;
     }
@@ -124,10 +151,11 @@ export function ProfileSettings(): React.ReactElement {
                 <div className="flex-1">
                   <Input 
                     label="Username" 
+                    error={usernameErrors.username?.message ?? ''}
                     {...registerUsername('username', { required: 'Username is required' })} 
                   />
                 </div>
-                <Button type="submit" isLoading={isUpdatingUsername}>Update</Button>
+                <Button type="submit" isLoading={isUpdatingUsername} className="mb-[2px] h-10">Update</Button>
               </form>
 
               <form onSubmit={(e) => { void handleEmailSubmit(onUpdateEmail)(e); }} className="flex items-end gap-4">
@@ -135,10 +163,11 @@ export function ProfileSettings(): React.ReactElement {
                   <Input 
                     label="Email Address" 
                     type="email"
+                    error={emailErrors.email?.message ?? ''}
                     {...registerEmail('email', { required: 'Email is required' })} 
                   />
                 </div>
-                <Button type="submit" isLoading={isUpdatingEmail}>Update</Button>
+                <Button type="submit" isLoading={isUpdatingEmail} className="mb-[2px] h-10">Update</Button>
               </form>
             </div>
           </Card>
@@ -154,17 +183,20 @@ export function ProfileSettings(): React.ReactElement {
               <Input 
                 label="Current Password" 
                 type="password"
+                error={passwordErrors.currentPassword?.message ?? ''}
                 {...registerPassword('currentPassword', { required: 'Required' })} 
               />
               <div className="grid grid-cols-2 gap-4">
                 <Input 
                   label="New Password" 
                   type="password"
+                  error={passwordErrors.newPassword?.message ?? ''}
                   {...registerPassword('newPassword', { required: 'Required', minLength: 6 })} 
                 />
                 <Input 
                   label="Confirm New Password" 
                   type="password"
+                  error={passwordErrors.confirmPassword?.message ?? ''}
                   {...registerPassword('confirmPassword', { required: 'Required' })} 
                 />
               </div>

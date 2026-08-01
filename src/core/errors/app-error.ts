@@ -13,6 +13,7 @@ export abstract class AppError extends Error {
   public constructor(
     message: string,
     public readonly statusCode?: number,
+    public readonly validationErrors?: Record<string, string[]>,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -23,8 +24,8 @@ export abstract class AppError extends Error {
 export class DomainError extends AppError {
   public readonly code: ErrorCode;
 
-  public constructor(message: string, code: ErrorCode = 'DOMAIN_ERROR') {
-    super(message, 422);
+  public constructor(message: string, code: ErrorCode = 'DOMAIN_ERROR', validationErrors?: Record<string, string[]>) {
+    super(message, 422, validationErrors);
     this.code = code;
   }
 }
@@ -33,8 +34,8 @@ export class DomainError extends AppError {
 export class BadRequestError extends AppError {
   public readonly code = 'BAD_REQUEST' as const;
 
-  public constructor(message = 'Bad request') {
-    super(message, 400);
+  public constructor(message = 'Bad request', validationErrors?: Record<string, string[]>) {
+    super(message, 400, validationErrors);
   }
 }
 

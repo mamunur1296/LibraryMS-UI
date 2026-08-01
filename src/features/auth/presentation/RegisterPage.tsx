@@ -16,18 +16,28 @@ export function RegisterPage(): React.ReactElement {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
-  } = useForm<RegisterInput>({
-    defaultValues: { username: '', email: '', password: '' },
+  } = useForm<RegisterInput & { phone: string }>({
+    defaultValues: { username: '', email: '', password: '', firstName: '', lastName: '', phone: '' },
   });
 
   if (session !== null && !session.isExpired()) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const onSubmit = async (data: RegisterInput): Promise<void> => {
-    const error = await registerUser(data.username, data.email, data.password);
+  const onSubmit = async (data: RegisterInput & { phone: string }): Promise<void> => {
+    const error = await registerUser(data.username, data.email, data.password, data.firstName, data.lastName, data.phone);
     if (error !== null) {
+      const appError = error as any;
+      if (appError.validationErrors) {
+        const vErrors = appError.validationErrors as Record<string, string[]>;
+        for (const [key, messages] of Object.entries(vErrors)) {
+          const fieldName = key.charAt(0).toLowerCase() + key.slice(1);
+          setError(fieldName as any, { type: 'server', message: messages[0] ?? 'Invalid field' });
+        }
+        return;
+      }
       toast.error(error.message, { duration: 4000 });
       return;
     }
@@ -75,7 +85,7 @@ export function RegisterPage(): React.ReactElement {
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-        className="flex-1 flex items-center justify-center p-6 lg:p-16"
+        className="flex-1 flex items-center justify-center p-6 lg:p-16 overflow-y-auto"
       >
         <div className="w-full max-w-md">
           <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
@@ -84,6 +94,31 @@ export function RegisterPage(): React.ReactElement {
             </div>
 
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-5" noValidate>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-navy-200">First Name</label>
+                  <input
+                    type="text"
+                    placeholder="First name"
+                    className="w-full h-11 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-navy-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all"
+                    {...register('firstName', { required: 'First name required' })}
+                  />
+                  {errors.firstName !== undefined && <p className="text-xs text-red-400">{errors.firstName.message}</p>}
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-navy-200">Last Name</label>
+                  <input
+                    type="text"
+                    placeholder="Last name"
+                    className="w-full h-11 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-navy-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all"
+                    {...register('lastName', { required: 'Last name required' })}
+                  />
+                  {errors.lastName !== undefined && <p className="text-xs text-red-400">{errors.lastName.message}</p>}
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-navy-200">Username</label>
                 <div className="relative">
@@ -110,6 +145,17 @@ export function RegisterPage(): React.ReactElement {
                   />
                 </div>
                 {errors.email !== undefined && <p className="text-xs text-red-400">{errors.email.message}</p>}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-navy-200">Phone Number</label>
+                <input
+                  type="text"
+                  placeholder="Enter your phone number"
+                  className="w-full h-11 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-navy-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all"
+                  {...register('phone', { required: 'Phone is required for members' })}
+                />
+                {errors.phone !== undefined && <p className="text-xs text-red-400">{errors.phone.message}</p>}
               </div>
 
               <div className="space-y-1.5">

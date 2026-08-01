@@ -21,33 +21,37 @@ export class AuthRefreshHttpClient implements HttpClient {
   ) {}
 
   public async get<T>(url: string, options?: RequestOptions): Promise<T> {
-    return this.withAuth(() => this.inner.get<T>(url, options), options);
+    return this.withAuth((opts) => this.inner.get<T>(url, opts), options);
   }
 
   public async post<T>(url: string, body: unknown, options?: RequestOptions): Promise<T> {
-    return this.withAuth(() => this.inner.post<T>(url, body, options), options);
+    return this.withAuth((opts) => this.inner.post<T>(url, body, opts), options);
   }
 
   public async put<T>(url: string, body: unknown, options?: RequestOptions): Promise<T> {
-    return this.withAuth(() => this.inner.put<T>(url, body, options), options);
+    return this.withAuth((opts) => this.inner.put<T>(url, body, opts), options);
   }
 
   public async patch<T>(url: string, body: unknown, options?: RequestOptions): Promise<T> {
-    return this.withAuth(() => this.inner.patch<T>(url, body, options), options);
+    return this.withAuth((opts) => this.inner.patch<T>(url, body, opts), options);
   }
 
   public async delete<T>(url: string, options?: RequestOptions): Promise<T> {
-    return this.withAuth(() => this.inner.delete<T>(url, options), options);
+    return this.withAuth((opts) => this.inner.delete<T>(url, opts), options);
   }
 
-  private async withAuth<T>(fn: () => Promise<T>, options?: RequestOptions): Promise<T> {
+  private async withAuth<T>(
+    fn: (opts?: RequestOptions) => Promise<T>,
+    options?: RequestOptions,
+  ): Promise<T> {
+    let opts = options ? { ...options } : {};
     const token = this.tokenProvider.getAccessToken();
     if (token !== null) {
-      this.injectToken(options, token);
+      opts.headers = { ...(opts.headers ?? {}), Authorization: `Bearer ${token}` };
     }
 
     try {
-      return await fn();
+      return await fn(opts);
     } catch (error) {
       if (!(error instanceof UnauthorizedError)) {
         throw error;
@@ -62,24 +66,18 @@ export class AuthRefreshHttpClient implements HttpClient {
 
       const newToken = this.tokenProvider.getAccessToken();
       if (newToken !== null) {
-        this.injectToken(options, newToken);
+        opts.headers = { ...(opts.headers ?? {}), Authorization: `Bearer ${newToken}` };
       }
 
       // Single retry
       try {
-        return await fn();
+        return await fn(opts);
       } catch (retryError) {
         if (retryError instanceof UnauthorizedError) {
           this.tokenProvider.clearSession();
         }
         throw retryError;
       }
-    }
-  }
-
-  private injectToken(options: RequestOptions | undefined, token: string): void {
-    if (options) {
-      options.headers = { ...(options.headers ?? {}), Authorization: `Bearer ${token}` };
     }
   }
 }

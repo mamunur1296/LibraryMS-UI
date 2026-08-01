@@ -5,6 +5,7 @@
 
 import {
   BadRequestError,
+  DomainError,
   ForbiddenError,
   NetworkError,
   NotFoundError,
@@ -74,28 +75,41 @@ export class FetchHttpClient implements HttpClient {
       return undefined as T;
     }
 
-    return response.json() as Promise<T>;
+    const json = await response.json();
+    
+    // Unwrap the standard backend response wrapper if present
+    if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
+      return json.data as T;
+    }
+    
+    return json as T;
   }
 
   private async handleError(response: Response): Promise<never> {
     let message = response.statusText;
+    let validationErrors: Record<string, string[]> | undefined = undefined;
 
     try {
-      const body = (await response.json()) as { message?: string; title?: string };
+      const body = (await response.json()) as { message?: string; title?: string; errors?: Record<string, string[]> };
       message = body.message ?? body.title ?? message;
+      if (body.errors) {
+        validationErrors = body.errors;
+      }
     } catch {
       // ignore JSON parse error — use status text
     }
 
     switch (response.status) {
       case 400:
-        throw new BadRequestError(message);
+        throw new BadRequestError(message, validationErrors);
       case 401:
         throw new UnauthorizedError(message);
       case 403:
         throw new ForbiddenError(message);
       case 404:
         throw new NotFoundError(message);
+      case 422:
+        throw new DomainError(message, 'DOMAIN_ERROR', validationErrors);
       default:
         throw new ServerError(message, response.status);
     }

@@ -69,7 +69,9 @@ function StatCard({ stat }: { stat: StatItem }): React.ReactElement {
 
 // ─── Main Dashboard Page ────────────────────────────────────
 export function DashboardPage(): React.ReactElement {
-  const { session, isAdmin, isLibrarian } = useAuth();
+  const { session, isAdmin, isLibrarian, isMember } = useAuth();
+
+  const isStaff = isAdmin || isLibrarian;
 
   const summaryQuery = useQuery({
     queryKey: ['dashboard-summary'],
@@ -77,6 +79,7 @@ export function DashboardPage(): React.ReactElement {
       if (_dashboardDeps === null) throw new Error('DashboardDeps not initialized');
       return _dashboardDeps.getDashboardSummary();
     },
+    enabled: isStaff,
     staleTime: 60_000,
     retry: 1,
   });
@@ -97,6 +100,7 @@ export function DashboardPage(): React.ReactElement {
       if (_dashboardDeps === null) throw new Error('DashboardDeps not initialized');
       return _dashboardDeps.getPopularBooks();
     },
+    enabled: isStaff,
     staleTime: 120_000,
   });
 
@@ -187,59 +191,83 @@ export function DashboardPage(): React.ReactElement {
         </button>
       </div>
 
-      {/* Stats grid */}
-      {summaryQuery.isLoading ? (
-        <div className="flex items-center justify-center h-48">
-          <Spinner size="lg" />
-        </div>
-      ) : summaryQuery.isError ? (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
-          Failed to load dashboard data. Please try again.
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <StatCard stat={stat} />
-            </motion.div>
-          ))}
-        </div>
+      {/* Stats grid (Staff only) */}
+      {isStaff && (
+        summaryQuery.isLoading ? (
+          <div className="flex items-center justify-center h-48">
+            <Spinner size="lg" />
+          </div>
+        ) : summaryQuery.isError ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+            Failed to load dashboard data. Please try again.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {stats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <StatCard stat={stat} />
+              </motion.div>
+            ))}
+          </div>
+        )
+      )}
+
+      {/* Member Dashboard */}
+      {isMember && (
+        <Card padding="lg" className="bg-gradient-to-br from-white to-amber-50 border-amber-100">
+          <div className="max-w-2xl">
+            <h2 className="text-xl font-bold text-slate-800 mb-2">Welcome to LibraryMS!</h2>
+            <p className="text-slate-600 mb-6 leading-relaxed">
+              Browse our extensive collection of books, make reservations for upcoming reads, and track your active borrows all from your dashboard.
+            </p>
+            <div className="flex gap-4">
+              <a href="/books" className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-colors shadow-sm shadow-amber-500/20">
+                Browse Books
+              </a>
+              <a href="/borrows" className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-xl border border-slate-200 transition-colors">
+                My Borrows
+              </a>
+            </div>
+          </div>
+        </Card>
       )}
 
       {/* Bottom section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Popular Books */}
-        <Card padding="none">
-          <CardHeader className="px-6 pt-5 pb-0">
-            <CardTitle>🔥 Popular Books</CardTitle>
-          </CardHeader>
-          {popularQuery.isLoading ? (
-            <div className="flex justify-center py-8"><Spinner /></div>
-          ) : (
-            <div className="divide-y divide-slate-50">
-              {(popularQuery.data ?? []).slice(0, 5).map((book, i) => (
-                <div key={book.bookId} className="flex items-center gap-3 px-6 py-3">
-                  <span className="w-6 h-6 rounded-full bg-navy-100 text-navy-700 text-xs font-bold flex items-center justify-center shrink-0">
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-800 truncate">{book.title}</p>
-                    <p className="text-xs text-slate-500 truncate">{book.authorName} · {book.categoryName}</p>
+        {/* Popular Books (Staff only) */}
+        {isStaff && (
+          <Card padding="none">
+            <CardHeader className="px-6 pt-5 pb-0">
+              <CardTitle>🔥 Popular Books</CardTitle>
+            </CardHeader>
+            {popularQuery.isLoading ? (
+              <div className="flex justify-center py-8"><Spinner /></div>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {(popularQuery.data ?? []).slice(0, 5).map((book, i) => (
+                  <div key={book.bookId} className="flex items-center gap-3 px-6 py-3">
+                    <span className="w-6 h-6 rounded-full bg-navy-100 text-navy-700 text-xs font-bold flex items-center justify-center shrink-0">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-slate-800 truncate">{book.title}</p>
+                      <p className="text-xs text-slate-500 truncate">{book.authorName} · {book.categoryName}</p>
+                    </div>
+                    <Badge variant="info">{book.totalBorrows}×</Badge>
                   </div>
-                  <Badge variant="info">{book.totalBorrows}×</Badge>
-                </div>
-              ))}
-              {(popularQuery.data ?? []).length === 0 && (
-                <p className="text-center text-slate-400 text-sm py-8">No data available</p>
-              )}
-            </div>
-          )}
-        </Card>
+                ))}
+                {(popularQuery.data ?? []).length === 0 && (
+                  <p className="text-center text-slate-400 text-sm py-8">No data available</p>
+                )}
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Branch Summary (Admin only) */}
         {isAdmin && (

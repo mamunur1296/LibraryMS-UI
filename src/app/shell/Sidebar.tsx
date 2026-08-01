@@ -37,10 +37,23 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/reports', icon: BarChart3, label: 'Reports', roles: ['Admin', 'Librarian'] },
 ];
 
-export function Sidebar(): React.ReactElement {
+export function Sidebar({ 
+  isMobileOpen, 
+  onCloseMobile 
+}: { 
+  isMobileOpen?: boolean; 
+  onCloseMobile?: () => void;
+}): React.ReactElement {
   const { session, logout } = useAuth();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+
+  // Close mobile sidebar when navigating
+  const handleNavClick = () => {
+    if (isMobileOpen && onCloseMobile) {
+      onCloseMobile();
+    }
+  };
 
   const visibleItems = NAV_ITEMS.filter((item) => {
     if (item.roles === undefined) return true;
@@ -56,9 +69,15 @@ export function Sidebar(): React.ReactElement {
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 72 : 240 }}
+      animate={{ width: collapsed && !isMobileOpen ? 72 : 240 }}
       transition={{ duration: 0.25, ease: 'easeInOut' }}
-      className="h-screen bg-navy-900 flex flex-col shrink-0 overflow-hidden border-r border-navy-800 relative"
+      className={cn(
+        "bg-navy-900 flex flex-col overflow-hidden border-r border-navy-800",
+        // Desktop: static, visible
+        "hidden md:flex md:relative md:h-screen md:shrink-0",
+        // Mobile: fixed, off-canvas, z-50
+        isMobileOpen ? "fixed inset-y-0 left-0 z-50 flex h-full shadow-2xl" : "hidden"
+      )}
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-16 border-b border-navy-800 shrink-0">
@@ -66,7 +85,7 @@ export function Sidebar(): React.ReactElement {
           <Library className="h-5 w-5 text-white" />
         </div>
         <AnimatePresence>
-          {!collapsed && (
+          {(!collapsed || isMobileOpen) && (
             <motion.span
               initial={{ opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: 'auto' }}
@@ -87,19 +106,20 @@ export function Sidebar(): React.ReactElement {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={handleNavClick}
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group relative',
                   isActive
                     ? 'bg-amber-500/20 text-amber-400 border border-amber-500/20'
                     : 'text-navy-400 hover:bg-navy-800 hover:text-navy-100',
-                  collapsed && 'justify-center px-2',
+                  collapsed && !isMobileOpen && 'justify-center px-2',
                 )
               }
             >
               <Icon className="h-5 w-5 shrink-0" />
               <AnimatePresence>
-                {!collapsed && (
+                {(!collapsed || isMobileOpen) && (
                   <motion.span
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -110,8 +130,8 @@ export function Sidebar(): React.ReactElement {
                   </motion.span>
                 )}
               </AnimatePresence>
-              {/* Tooltip when collapsed */}
-              {collapsed && (
+              {/* Tooltip when collapsed (desktop only) */}
+              {collapsed && !isMobileOpen && (
                 <div className="absolute left-full ml-2 px-2 py-1 bg-navy-700 text-navy-100 text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                   {item.label}
                 </div>
@@ -125,11 +145,12 @@ export function Sidebar(): React.ReactElement {
       <div className="px-2 pb-4 space-y-1 border-t border-navy-800 pt-3">
         <NavLink
           to="/profile"
+          onClick={handleNavClick}
           className={({ isActive }) =>
             cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
               isActive ? 'bg-navy-800 text-white' : 'text-navy-400 hover:bg-navy-800 hover:text-navy-100',
-              collapsed && 'justify-center px-2',
+              collapsed && !isMobileOpen && 'justify-center px-2',
             )
           }
         >
@@ -137,7 +158,7 @@ export function Sidebar(): React.ReactElement {
             {session?.username?.charAt(0).toUpperCase() ?? 'U'}
           </div>
           <AnimatePresence>
-            {!collapsed && (
+            {(!collapsed || isMobileOpen) && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -152,15 +173,18 @@ export function Sidebar(): React.ReactElement {
         </NavLink>
 
         <button
-          onClick={() => { void handleLogout(); }}
+          onClick={() => { 
+            handleNavClick();
+            void handleLogout(); 
+          }}
           className={cn(
             'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-navy-400 hover:bg-red-500/10 hover:text-red-400 transition-all',
-            collapsed && 'justify-center px-2',
+            collapsed && !isMobileOpen && 'justify-center px-2',
           )}
         >
           <LogOut className="h-5 w-5 shrink-0" />
           <AnimatePresence>
-            {!collapsed && (
+            {(!collapsed || isMobileOpen) && (
               <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 Logout
               </motion.span>
@@ -169,10 +193,10 @@ export function Sidebar(): React.ReactElement {
         </button>
       </div>
 
-      {/* Collapse toggle */}
+      {/* Collapse toggle (Desktop only) */}
       <button
         onClick={() => setCollapsed((c) => !c)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-navy-700 border border-navy-600 rounded-full flex items-center justify-center text-navy-300 hover:text-white transition-colors shadow-md z-10"
+        className="hidden md:flex absolute -right-3 top-20 w-6 h-6 bg-navy-700 border border-navy-600 rounded-full items-center justify-center text-navy-300 hover:text-white transition-colors shadow-md z-10"
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}

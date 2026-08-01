@@ -20,7 +20,7 @@ export class RefreshTokenUseCase {
       return err(new SessionExpiredError());
     }
 
-    const result = await this.authGateway.refreshToken(session.refreshToken);
+    const result = await this.authGateway.refreshToken(session.accessToken, session.refreshToken);
 
     if (result.isErr()) {
       this.sessionStore.clear();
