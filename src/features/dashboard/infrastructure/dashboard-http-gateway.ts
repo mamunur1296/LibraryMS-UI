@@ -7,52 +7,12 @@ import type { HttpClient } from '@core/http';
 import type { DashboardGateway } from '../domain/ports/dashboard-gateway';
 import type { DashboardSummary, AdminDashboard, PopularBook, MemberProfileStats } from '../domain/models/dashboard';
 
-const DashboardSummarySchema = z.object({
-  totalBooks: z.number(),
-  totalMembers: z.number(),
-  activeBorrows: z.number(),
-  overdueBorrows: z.number(),
-  pendingReservations: z.number(),
-  totalBranches: z.number(),
-  totalLateFinesCollected: z.number(),
-  pendingLateFines: z.number(),
-});
-
-const BranchSummarySchema = z.object({
-  branchId: z.string(),
-  branchName: z.string(),
-  totalBooks: z.number(),
-  totalMembers: z.number(),
-  activeBorrows: z.number(),
-  overdueBorrows: z.number(),
-  totalRevenue: z.number(),
-});
-
-const AdminDashboardSchema = z.object({
-  totalSummary: DashboardSummarySchema,
-  branchSummaries: z.array(BranchSummarySchema),
-});
-
-const PopularBookSchema = z.object({
-  bookId: z.string(),
-  title: z.string(),
-  authorName: z.string(),
-  categoryName: z.string(),
-  totalBorrows: z.number(),
-});
-
-const MemberProfileStatsSchema = z.object({
-  memberId: z.string(),
-  totalBorrows: z.number(),
-  activeBorrows: z.number(),
-  overdueBorrows: z.number(),
-  activeReservations: z.number(),
-  totalFinesDue: z.number(),
-  totalFinesPaid: z.number(),
-  membershipExpiry: z.string(),
-  nearestDueDate: z.string().nullable(),
-  favouriteCount: z.number(),
-});
+import {
+  DashboardSummarySchema,
+  AdminDashboardSchema,
+  PopularBookSchema,
+  MemberProfileStatsSchema,
+} from './dtos/dashboard-dtos';
 
 export class DashboardHttpGateway implements DashboardGateway {
   public constructor(private readonly http: HttpClient) {}
