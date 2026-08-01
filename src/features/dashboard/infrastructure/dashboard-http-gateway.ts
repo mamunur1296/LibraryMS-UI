@@ -4,6 +4,8 @@ import type { AppError } from '@core/errors';
 import { ServerError } from '@core/errors';
 import { z } from 'zod';
 import type { HttpClient } from '@core/http';
+import type { DashboardGateway } from '../domain/ports/dashboard-gateway';
+import type { DashboardSummary, AdminDashboard, PopularBook, MemberProfileStats } from '../domain/models/dashboard';
 
 const DashboardSummarySchema = z.object({
   totalBooks: z.number(),
@@ -39,11 +41,6 @@ const PopularBookSchema = z.object({
   totalBorrows: z.number(),
 });
 
-export type DashboardSummary = z.infer<typeof DashboardSummarySchema>;
-export type BranchSummary = z.infer<typeof BranchSummarySchema>;
-export type AdminDashboard = z.infer<typeof AdminDashboardSchema>;
-export type PopularBook = z.infer<typeof PopularBookSchema>;
-
 const MemberProfileStatsSchema = z.object({
   memberId: z.string(),
   totalBorrows: z.number(),
@@ -56,9 +53,8 @@ const MemberProfileStatsSchema = z.object({
   nearestDueDate: z.string().nullable(),
   favouriteCount: z.number(),
 });
-export type MemberProfileStats = z.infer<typeof MemberProfileStatsSchema>;
 
-export class DashboardHttpGateway {
+export class DashboardHttpGateway implements DashboardGateway {
   public constructor(private readonly http: HttpClient) {}
 
   public async getDashboardSummary(): Promise<Result<DashboardSummary, AppError>> {

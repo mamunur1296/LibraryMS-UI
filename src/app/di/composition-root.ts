@@ -3,8 +3,7 @@ import type { TokenProvider } from '@core/http';
 import { appConfig } from '@core/config';
 import { createAuthModule } from '@features/auth/auth-module';
 import { getAuthStore } from '@features/auth/store/auth-store';
-import { DashboardHttpGateway } from '@features/dashboard/infrastructure/dashboard-http-gateway';
-import { setDashboardDeps } from '@features/dashboard/presentation/DashboardPage';
+import { createDashboardModule } from '@features/dashboard/dashboard-module';
 
 // ============================================================
 //  Composition Root — THE one place that wires all concretes.
@@ -44,27 +43,5 @@ export function initializeApp(): void {
   createAuthModule({ http: authHttp });
 
   // ── 4. Dashboard module ──
-  const dashboardGateway = new DashboardHttpGateway(authHttp);
-  setDashboardDeps({
-    getDashboardSummary: async () => {
-      const result = await dashboardGateway.getDashboardSummary();
-      if (result.isErr()) throw result.error;
-      return result.value;
-    },
-    getAdminDashboard: async () => {
-      const result = await dashboardGateway.getAdminDashboard();
-      if (result.isErr()) throw result.error;
-      return result.value;
-    },
-    getPopularBooks: async () => {
-      const result = await dashboardGateway.getPopularBooks();
-      if (result.isErr()) throw result.error;
-      return result.value;
-    },
-    getMemberProfileStats: async (memberId: string) => {
-      const result = await dashboardGateway.getMemberProfileStats(memberId);
-      if (result.isErr()) throw result.error;
-      return result.value;
-    },
-  });
+  createDashboardModule({ http: authHttp });
 }

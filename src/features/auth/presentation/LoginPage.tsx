@@ -5,6 +5,7 @@ import { BookOpen, Lock, User, Eye, EyeOff, Library } from 'lucide-react';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 import { getAuthStore } from '../store/auth-store';
+import { AuthBrandingPanel } from './components/AuthBrandingPanel';
 
 interface LoginFormValues {
   username: string;
@@ -51,64 +52,28 @@ export function LoginPage(): React.ReactElement {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800">
-      {/* Left Panel — Branding */}
-      <motion.div
-        initial={{ opacity: 0, x: -40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="hidden lg:flex lg:w-1/2 flex-col justify-between p-16 relative overflow-hidden"
+      <AuthBrandingPanel
+        title="Manage Your"
+        highlight="Library Smarter"
+        description="Track books, manage members, handle borrows and reservations — all in one beautiful, professional dashboard."
       >
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 left-20 w-96 h-96 rounded-full bg-amber-400 blur-3xl" />
-          <div className="absolute bottom-20 right-20 w-64 h-64 rounded-full bg-blue-400 blur-3xl" />
-        </div>
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-amber-500 rounded-xl">
-              <Library className="h-7 w-7 text-white" />
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: '📚', label: 'Book Catalog' },
+            { icon: '👥', label: 'Member Management' },
+            { icon: '🔄', label: 'Borrow & Return' },
+            { icon: '📊', label: 'Reports & Analytics' },
+          ].map((feature) => (
+            <div
+              key={feature.label}
+              className="flex items-center gap-2.5 bg-white/5 rounded-xl px-4 py-3 border border-white/10"
+            >
+              <span className="text-xl">{feature.icon}</span>
+              <span className="text-sm font-medium text-navy-200">{feature.label}</span>
             </div>
-            <span className="text-2xl font-bold text-white tracking-tight">LibraryMS</span>
-          </div>
-          <p className="text-navy-300 text-sm">Library Management System</p>
+          ))}
         </div>
-
-        <div className="relative z-10 space-y-6">
-          <div>
-            <h1 className="text-5xl font-bold text-white leading-tight">
-              Manage Your
-              <span className="block text-amber-400">Library Smarter</span>
-            </h1>
-            <p className="mt-4 text-lg text-navy-300 max-w-md leading-relaxed">
-              Track books, manage members, handle borrows and reservations — all in one beautiful,
-              professional dashboard.
-            </p>
-          </div>
-
-          {/* Feature list */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { icon: '📚', label: 'Book Catalog' },
-              { icon: '👥', label: 'Member Management' },
-              { icon: '🔄', label: 'Borrow & Return' },
-              { icon: '📊', label: 'Reports & Analytics' },
-            ].map((feature) => (
-              <div
-                key={feature.label}
-                className="flex items-center gap-2.5 bg-white/5 rounded-xl px-4 py-3 border border-white/10"
-              >
-                <span className="text-xl">{feature.icon}</span>
-                <span className="text-sm font-medium text-navy-200">{feature.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <p className="relative z-10 text-navy-500 text-xs">
-          © {new Date().getFullYear()} LibraryMS. All rights reserved.
-        </p>
-      </motion.div>
+      </AuthBrandingPanel>
 
       {/* Right Panel — Login Form */}
       <motion.div
